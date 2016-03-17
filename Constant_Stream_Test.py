@@ -5,8 +5,8 @@ import picamera
 import cv2
 import numpy as np
 
-blueLower=(100, 0, 0)
-blueUpper=(150, 255, 255)
+blueLower=(110, 64, 40) #lower threshold for HSV
+blueUpper=(140, 255, 170) #upper threshold for HSV	
 
 camera=picamera.PiCamera()
 stream=io.BytesIO()
@@ -19,10 +19,13 @@ for foo in camera.capture_continuous(stream, format='jpeg'):
 	stream.truncate()
 	stream.seek(0)
 	
+	#Convert to OpenCV Object
 	data=np.fromstring(stream.getvalue(), dtype=np.uint8)
 	image=cv2.imdecode(data, 1)
 
+	#Convert to HSV
 	hsv=cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+	#Bit-mask with range
 	mask=cv2.inRange(hsv, blueLower, blueUpper)
 
 	cv2.imshow('image', mask)
