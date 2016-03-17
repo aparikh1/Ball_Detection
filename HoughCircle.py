@@ -16,33 +16,32 @@ camera=picamera.PiCamera()
 camera.resolution=(640, 480)
 camera.hflip=True
 camera.vflip=True
-#camera.start_preview()
-#time.sleep(0.1)
-#camera.capture(stream, format='jpeg')
 
-#while True:
 for foo in camera.capture_continuous(stream, format='jpeg'):
 	stream.truncate()
 	stream.seek(0)	
-
+	
+	#Convert to OpenCV Object
 	data=np.fromstring(stream.getvalue(), dtype=np.uint8)
 	src=cv2.imdecode(data, 1)
+	
+	#Convert to grayscale
 	img=cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+	
+	#Blur image
 	img=cv2.medianBlur(img, 5)
 	cimg=src.copy()
 
+	#Run Hough transform
+	#cv2.HoughCircles(image, method, ratio of image resolution to accumulator resolution, min dist btwn circles, output vector of circles, higher threshold for edge detection, accumulator threshold, min radius, max radius)
 	circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 10, np.array([]), 100, 30, 1, 30)
 
-#	a, b, c = circles.shape
-#	for i in range(b):
-#		cv2.circle(cimg, (circles[0][i][0], circles[0][i][1]), circles[0][i][2], (0, 0, 255), 3, cv2.LINE_AA)
-#       	cv2.circle(cimg, (circles[0][i][0], circles[0][i][1]), 2, (0, 255, 0), 3, cv2.LINE_AA)  # draw center of circle
-	if circles is not None:
+	if circles is not None:	#If circles are detected
 		circles=np.round(circles[0,:]).astype("int")
 		
 		for (x, y, r) in circles:
-			cv2.circle(cimg,(x, y), r, (0, 0, 255), 4)
-			cv2.circle(cimg, (x, y), 2, (0, 255, 0), 4)
+			cv2.circle(cimg,(x, y), r, (0, 0, 255), 4)	#edge of circle
+			cv2.circle(cimg, (x, y), 2, (0, 255, 0), 4)	#center of circle
 			cv2.imshow("source", src)
 			cv2.imshow("detected circles", cimg)
 
